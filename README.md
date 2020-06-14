@@ -1,6 +1,6 @@
 # Now Playing
 
-Basic "Now Playing" application for Windows that can be used to log the currently playing Spotify track without using the web API. Useful for overlaying "Now Playing" data on a streaming broadcast. 
+Basic "Now Playing" application for Windows that can be used to log the currently playing Spotify track without using the web API. Useful for overlaying "Now Playing" information on a streaming broadcast. 
 
 The program continually polls the Spotify window for updates until it is manually terminated.
 
