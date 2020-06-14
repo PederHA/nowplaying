@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -56,6 +57,7 @@ func getWindowText(hwnd syscall.Handle, str *uint16, maxCount int32) (len int32,
 	return
 }
 
+/* Attempts to find a window with a given title using a predefined callback function. */
 func findWindow(title string, callback uintptr, handle *syscall.Handle) (syscall.Handle, error) {
 	enumWindows(callback, 0)
 	if *handle == 0 {
@@ -104,7 +106,7 @@ func logSpotifyWindow(windowTitle string, npPath string) {
 }
 
 /*
-Creates a callback function using a pointer to the handle defined in main().
+Creates a callback function that updates the value of a syscall.Handle pointer.
 There are probably 100 ways to do this in more readable and efficient ways, but I am awful at Go.
 */
 func makeCallback(handle *syscall.Handle) uintptr {
@@ -126,8 +128,20 @@ func makeCallback(handle *syscall.Handle) uintptr {
 	return cb
 }
 
+/* If necessary, creates directory of log file */
+func initLogdir(filePath string, perm os.FileMode) {
+	// Get the file's directory and its parent directories
+	dirs := filepath.Dir(filePath)
+	err := os.MkdirAll(dirs, perm)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	// NOTE: This should probably all be wrapped in log.Fatal() or os.Exit()?
+	var handle syscall.Handle // Our window handle that we pass around (Probably REALLY bad)
+	callback := makeCallback(&handle)
 
 	// Parse flags
 	title := flag.String("t", "Spotify", "Window title to look for") // Maybe cba this?
@@ -140,9 +154,9 @@ func main() {
 	if len(args) > 0 {
 		npPath = args[0]
 	}
-
-	var handle syscall.Handle // Our window handle that we pass around (Probably REALLY bad)
-	callback := makeCallback(&handle)
+	initLogdir(npPath, 0777)
+	// NOTE: Should we open the file here, so it can't be accidentally deleted by another process?
+	// Would need to add use os.Open() instead of
 
 	// Main program flow
 	for true {
